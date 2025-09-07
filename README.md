@@ -1,4 +1,4 @@
-What the Analysis Covers
+🧭 What the Analysis Covers
 1) Funnel Effectiveness (Campaign-level)
 
 Aggregate by xyz_campaign_id and compute CTR and CVR (safe division).
@@ -25,9 +25,15 @@ Mirror the campaign analysis by fb_campaign_id.
 
 Build a pair table for (fb_campaign_id × xyz_campaign_id) and rank combinations by end-to-end efficiency.
 
+4) Underperformers (Data-Driven)
+
+Flag campaigns with CPA > 75th percentile or CVR < 25th percentile, among those with ≥ median spend.
+
+Produce a short list for fix / cut / reallocate actions.
 
 
-Key Insights (from this dataset)
+
+🧠 Key Insights (from this dataset)
 
 Costs rise with age: both CPA and CPM increase from 30–34 → 45–49.
 
@@ -41,7 +47,34 @@ Funnel behavior: CTR tends to rise with age, but CVR declines; older cohorts cli
 
 Budget move: shift spend toward the most efficient segments (M 30–34, then F 30–34, M 35–39), constrain high-cost cohorts unless LTV justifies.
 
+🧾 Reproducible Snippets
+Rename & aggregate safely
+df = pd.read_csv("KAG_conversion_data_raw.csv")
+df.rename(columns={'Approved_Conversion': 'conversions'}, inplace=True)
 
+agg_demo = (df.groupby(['age','gender'], as_index=False)
+              .agg(impressions=('Impressions','sum'),
+                   clicks=('Clicks','sum'),
+                   conversions=('conversions','sum'),
+                   spent=('Spent','sum')))
+
+agg_demo['CTR'] = agg_demo['clicks']/agg_demo['impressions']*100
+agg_demo['ConversionRate'] = agg_demo['conversions']/agg_demo['clicks']*100
+agg_demo['CPM'] = agg_demo['spent']/agg_demo['impressions']*1000
+agg_demo['CPC'] = agg_demo['spent']/agg_demo['clicks']
+agg_demo['CPA'] = agg_demo['spent']/agg_demo['conversions']
+
+Campaign funnel & ranking
+agg_camp = (df.groupby('xyz_campaign_id', as_index=False)
+             .agg(impressions=('Impressions','sum'),
+                  clicks=('Clicks','sum'),
+                  conversions=('conversions','sum')))
+
+agg_camp['CTR'] = agg_camp['clicks']/agg_camp['impressions']*100
+agg_camp['ConversionRate'] = agg_camp['conversions']/agg_camp['clicks']*100
+agg_camp['Conv_per_1k_Impr'] = (agg_camp['CTR']*agg_camp['ConversionRate'])/10.0
+
+agg_camp.sort_values('Conv_per_1k_Impr', ascending=False).head(5)
 
 
 ⚠️ Assumptions & Limitations
