@@ -32,10 +32,6 @@ pip install -U pandas numpy matplotlib python-pptx
 
 > All metrics are computed on **aggregated totals** for correctness.
 
-
-```bash
-libreoffice --headless --convert-to pdf "Campaign_Documentation_Deck.pptx"
-libreoffice --headless --convert-to pdf "TrendWave_Campaign_Insights.pptx"
 ```
 
 ## Insights & Recommendations (from this dataset)
