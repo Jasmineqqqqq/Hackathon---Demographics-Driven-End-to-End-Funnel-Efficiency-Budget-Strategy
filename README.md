@@ -8,13 +8,6 @@ This project analyzes paid-social campaign data to:
 - Recommend **budget reallocation** to lower blended CPA.
 - Auto-generate a **12–15 slide deck** summarizing insights.
 
-## Files
-- `KAG_conversion_data_raw.csv` — raw dataset.
-- `Hack Studio - September Edition.docx` — brief & requirements.
-- `hackathon_project.ipynb` — analysis notebook.
-- (Generated) `Campaign_Documentation_Deck.pptx` — documentation deck.
-- (Generated) `TrendWave_Campaign_Insights.pptx` — insights deck.
-
 ## Environment
 - Python 3.9+  
 - Libraries: `pandas`, `numpy`, `matplotlib`, `python-pptx`
@@ -39,14 +32,6 @@ pip install -U pandas numpy matplotlib python-pptx
 
 > All metrics are computed on **aggregated totals** for correctness.
 
-## Quick Start
-1) Open `hackathon_project.ipynb` and run all cells to reproduce the analysis.
-2) The notebook produces two decks:
-   - `Campaign_Documentation_Deck.pptx`
-   - `TrendWave_Campaign_Insights.pptx`
-
-## Export PPTX → PDF
-Use LibreOffice (cross-platform) from the command line:
 
 ```bash
 libreoffice --headless --convert-to pdf "Campaign_Documentation_Deck.pptx"
