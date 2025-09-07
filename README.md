@@ -1,89 +1,77 @@
-🧭 What the Analysis Covers
-1) Funnel Effectiveness (Campaign-level)
+# Precision Spend: Demographic-Driven CPA Optimization for Social Ads
 
-Aggregate by xyz_campaign_id and compute CTR and CVR (safe division).
+## Overview
+This project analyzes paid-social campaign data to:
+- Measure funnel efficiency — **impressions → clicks (CTR)** and **clicks → sales (Conversion Rate)**.
+- Compare **cost efficiency** — **CPM** (₹/1k impressions), **CPC**, **CPA** (₹/sale).
+- Benchmark performance across **age × gender** segments and campaigns.
+- Recommend **budget reallocation** to lower blended CPA.
+- Auto-generate a **12–15 slide deck** summarizing insights.
 
-Rank campaigns by:
+## Files
+- `KAG_conversion_data_raw.csv` — raw dataset.
+- `Hack Studio - September Edition.docx` — brief & requirements.
+- `hackathon_project.ipynb` — analysis notebook.
+- (Generated) `Campaign_Documentation_Deck.pptx` — documentation deck.
+- (Generated) `TrendWave_Campaign_Insights.pptx` — insights deck.
 
-CTR (%)
+## Environment
+- Python 3.9+  
+- Libraries: `pandas`, `numpy`, `matplotlib`, `python-pptx`
 
-Conversion Rate (%)
+```bash
+pip install -U pandas numpy matplotlib python-pptx
+```
 
-Sales per 1k impressions = (CTR × CVR)/10
+## Data Fields (key)
+- `Impressions`, `Clicks`, `Spent`, `Approved_Conversion` (renamed to `conversions`)
+- Demographics: `age` (bands), `gender`; targeting: `interest`
+- IDs: `xyz_campaign_id`, `fb_campaign_id`, `ad_id` (optional)
 
+## KPI Definitions
+- **CTR (%)** = Clicks / Impressions × 100  
+- **Conversion Rate (CVR, %)** = Conversions / Clicks × 100  
+- **CPM (₹/1k)** = Spent / Impressions × 1000  
+- **CPC (₹/click)** = Spent / Clicks  
+- **CPA (₹/sale)** = Spent / Conversions  
+- **Sales per 1k Impressions** = (CTR% × CVR%) / 10  
+- **Conversions per ₹1k Spend** = 1000 / CPA
 
-2) Demographic Performance (Age × Gender)
+> All metrics are computed on **aggregated totals** for correctness.
 
-Aggregate by ['age','gender'] and compute CTR, CVR, CPM, CPC, CPA.
+## Quick Start
+1) Open `hackathon_project.ipynb` and run all cells to reproduce the analysis.
+2) The notebook produces two decks:
+   - `Campaign_Documentation_Deck.pptx`
+   - `TrendWave_Campaign_Insights.pptx`
 
-Build pivots for stakeholder-friendly views and bar charts with hue.
+## Export PPTX → PDF
+Use LibreOffice (cross-platform) from the command line:
 
+```bash
+libreoffice --headless --convert-to pdf "Campaign_Documentation_Deck.pptx"
+libreoffice --headless --convert-to pdf "TrendWave_Campaign_Insights.pptx"
+```
 
-3) Facebook Campaigns & Pair View
+## Insights & Recommendations (from this dataset)
+- **Costs rise with age:** both **CPA** and **CPM** increase from 30–34 to 45–49.  
+- **Gender gap:** **M** cohorts are cheaper than **F** at the same age on CPA and CPM.  
+- **Best segment:** **M 30–34** (lowest CPA & CPM).  
+- **Worst segment:** **F 45–49** (highest CPA & CPM).  
+- **Funnel behavior:** CTR tends to increase with age, but **CVR declines**; older cohorts click more but buy less → higher CPA.  
+- **Budget rule (data-only):** allocate share ∝ **1/CPA**; rebalance weekly and monitor **marginal CPA** as you scale.
 
-Mirror the campaign analysis by fb_campaign_id.
+## Tools / Libraries
+- Python, pandas, numpy, matplotlib, python-pptx  
+- (Jupyter) Notebook workflow for EDA and reporting
 
-Build a pair table for (fb_campaign_id × xyz_campaign_id) and rank combinations by end-to-end efficiency.
+## Known Challenges
+- Sparse conversions can make CPA volatile; ensure minimum volume before decisions.  
+- Aggregation vs. row averages (avoid Simpson’s paradox).  
+- No revenue/LTV → CPA-only view; ROAS not computed.  
+- Attribution limits (single conversion field).
 
-4) Underperformers (Data-Driven)
-
-Flag campaigns with CPA > 75th percentile or CVR < 25th percentile, among those with ≥ median spend.
-
-Produce a short list for fix / cut / reallocate actions.
-
-
-
-🧠 Key Insights (from this dataset)
-
-Costs rise with age: both CPA and CPM increase from 30–34 → 45–49.
-
-Gender gap: male cohorts are cheaper than female cohorts (same age) on CPA and CPM.
-
-Best segment: Male 30–34 — lowest CPA & CPM.
-
-Worst segment: Female 45–49 — highest CPA & CPM.
-
-Funnel behavior: CTR tends to rise with age, but CVR declines; older cohorts click more but convert worse → higher CPA.
-
-Budget move: shift spend toward the most efficient segments (M 30–34, then F 30–34, M 35–39), constrain high-cost cohorts unless LTV justifies.
-
-🧾 Reproducible Snippets
-Rename & aggregate safely
-df = pd.read_csv("KAG_conversion_data_raw.csv")
-df.rename(columns={'Approved_Conversion': 'conversions'}, inplace=True)
-
-agg_demo = (df.groupby(['age','gender'], as_index=False)
-              .agg(impressions=('Impressions','sum'),
-                   clicks=('Clicks','sum'),
-                   conversions=('conversions','sum'),
-                   spent=('Spent','sum')))
-
-agg_demo['CTR'] = agg_demo['clicks']/agg_demo['impressions']*100
-agg_demo['ConversionRate'] = agg_demo['conversions']/agg_demo['clicks']*100
-agg_demo['CPM'] = agg_demo['spent']/agg_demo['impressions']*1000
-agg_demo['CPC'] = agg_demo['spent']/agg_demo['clicks']
-agg_demo['CPA'] = agg_demo['spent']/agg_demo['conversions']
-
-Campaign funnel & ranking
-agg_camp = (df.groupby('xyz_campaign_id', as_index=False)
-             .agg(impressions=('Impressions','sum'),
-                  clicks=('Clicks','sum'),
-                  conversions=('conversions','sum')))
-
-agg_camp['CTR'] = agg_camp['clicks']/agg_camp['impressions']*100
-agg_camp['ConversionRate'] = agg_camp['conversions']/agg_camp['clicks']*100
-agg_camp['Conv_per_1k_Impr'] = (agg_camp['CTR']*agg_camp['ConversionRate'])/10.0
-
-agg_camp.sort_values('Conv_per_1k_Impr', ascending=False).head(5)
-
-
-⚠️ Assumptions & Limitations
-
-Approved_Conversion ≈ final sale; revenue/LTV not provided (no ROAS).
-
-Metrics computed on aggregated totals; safe division with NaN for zero denominators.
-
-No multi-touch attribution; results reflect last-touch in the file.
-
-Performance across demographics may be confounded by creative/offer differences.
-
+## Repro Tips
+- Ensure column names match (`Approved_Conversion → conversions`).  
+- Compute metrics on **aggregated totals** and use safe division.  
+- Lock age order for pretty pivots: `['30-34','35-39','40-44','45-49']`.
